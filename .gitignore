@@ -1,0 +1,24 @@
+# Node.js
+node_modules/
+package-lock.json
+
+# VS Code & Visual Studio
+.vscode/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.esproj
+*.db
+obj/
+bin/
+
+# Logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# System
+.DS_Store
+Thumbs.db

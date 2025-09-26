@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post - medinfo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .post-header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .post-title {
+            font-size: 2.2rem;
+            color: #1e3a8a;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .post-meta {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+
+        .post-category {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .post-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 30px;
+            line-height: 1.8;
+        }
+
+        .navbar {
+            background-color: #1e3a8a;
+            height: 50px; /* الحفاظ على الارتفاع الأصلي */
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            height: 100%; /* ليتناسب مع ارتفاع الشريط */
+            padding: 0 15px; /* تقليل الحشوة الداخلية */
+        }
+
+        .logo-img {
+            max-height: 150px; /* زيادة كبيرة في الارتفاع */
+            max-width: 310px; /* زيادة كبيرة في العرض */
+            object-fit: contain;
+            /* تحسين الوضوح مع الحفاظ على الحجم */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            filter: contrast(110%) brightness(105%);
+            transition: transform 0.3s ease;
+        }
+
+            /* تأثير عند المرور بالماوس */
+            .logo-img:hover {
+                transform: scale(1.03);
+            }
+
+        .server-status {
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+            .server-status.connected {
+                background: #e8f5e9;
+                color: #388e3c;
+            }
+
+            .server-status.disconnected {
+                background: #ffebee;
+                color: #d32f2f;
+            }
+
+        /* ✅ Dark Mode */
+        .dark-mode {
+            background-color: #111 !important;
+            color: #eee !important;
+        }
+
+            .dark-mode .card {
+                background-color: #1e1e1e;
+                color: #eee;
+                border-color: #333;
+            }
+
+            .dark-mode .navbar {
+                background-color: #000 !important;
+            }
+
+            .dark-mode .navbar-brand {
+                color: #fff !important;
+            }
+
+            .dark-mode .post-header,
+            .dark-mode .post-content {
+                background-color: #1e1e1e;
+                color: #eee;
+            }
+
+            .dark-mode .post-category {
+                background-color: #3b82f6;
+                color: white;
+            }
+    </style>
+</head>
+<body>
+    <!-- ✅ Dark Mode Toggle -->
+    <button id="toggle-dark" style="position: fixed; top: 10px; right: 10px; z-index: 9999;" class="btn btn-sm btn-dark">🌙</button>
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container">
+            <!-- استبدال النص بصورة -->
+            <a class="navbar-brand" href="#">
+                <img src="logo.png" alt="medinfo Logo" class="logo-img">
+                <span class="visually-hidden">medinfo</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Server status -->
+    <div class="container">
+        <div class="server-status" id="serverStatus">Checking server status...</div>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading post...</p>
+        </div>
+
+        <div id="error" class="alert alert-danger" style="display: none;"></div>
+
+        <div id="post-container" style="display: none;">
+            <div class="post-header">
+                <h1 class="post-title" id="post-title"></h1>
+                <div class="post-meta">
+                    <span id="post-date"></span> |
+                    <span class="post-category" id="post-category"></span>
+                </div>
+            </div>
+
+            <div class="post-content" id="post-content"></div>
+
+            <div class="text-center mt-5 mb-4">
+                <a href="index.html" class="btn btn-lg btn-outline-primary">Back to all posts</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ✅ Dark Mode
+        const toggleBtn = document.getElementById("toggle-dark");
+        const darkClass = "dark-mode";
+
+        if (localStorage.getItem("dark") === "true") {
+            document.body.classList.add(darkClass);
+        }
+
+        toggleBtn.addEventListener("click", () => {
+            document.body.classList.toggle(darkClass);
+            const isDark = document.body.classList.contains(darkClass);
+            localStorage.setItem("dark", isDark);
+        });
+
+        // Helper function to display errors
+        function showError(message) {
+            const errorDiv = document.getElementById("error");
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = "block";
+            document.getElementById("loading").style.display = "none";
+        }
+
+        // Helper function to show loading
+        function setLoading(isLoading) {
+            document.getElementById("loading").style.display = isLoading ? "block" : "none";
+            document.getElementById("post-container").style.display = isLoading ? "none" : "block";
+        }
+
+        // Check server status
+        async function checkServerStatus() {
+            const serverStatus = document.getElementById('serverStatus');
+            try {
+                const res = await fetch('/api/test');
+
+                if (!res.ok) {
+                    throw new Error(`Server is running but with issues (Status: ${res.status})`);
+                }
+
+                const data = await res.json();
+                if (data.status !== 'ok') {
+                    throw new Error('Server is running but endpoint is incorrect');
+                }
+
+                serverStatus.textContent = '✅ Server is working correctly';
+                serverStatus.className = 'server-status connected';
+                return true;
+            } catch (error) {
+                serverStatus.textContent = '❌ Server is not connected! Make sure:<br>1. Server is running (node server.js)<br>2. Page is opened via http://localhost:3000/post.html';
+                serverStatus.className = 'server-status disconnected';
+                return false;
+            }
+        }
+
+        // Fetch post data
+        async function loadPost() {
+            try {
+                setLoading(true);
+
+                // Extract ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('id');
+
+                if (!postId) {
+                    throw new Error("Post ID is missing in the URL");
+                }
+
+                // Fetch data from API
+                const res = await fetch(`/api/posts/${postId}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        throw new Error("Post not found");
+                    }
+                    throw new Error(`Failed to fetch post (Status: ${res.status})`);
+                }
+
+                let post;
+                try {
+                    post = await res.json();
+                } catch (e) {
+                    const errorText = await res.text();
+                    throw new Error('Server did not respond with proper JSON: ' + errorText.substring(0, 100) + '...');
+                }
+
+                // Ensure data exists
+                if (!post) {
+                    throw new Error("Post not found");
+                }
+
+                // Display data
+                document.getElementById('post-title').textContent = post.title;
+
+                // Display date
+                if (post.created_at) {
+                    const date = new Date(post.created_at).toLocaleDateString("en-US", {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    document.getElementById('post-date').textContent = date;
+                } else {
+                    document.getElementById('post-date').textContent = 'Date not specified';
+                }
+
+                // Display content
+                document.getElementById('post-content').innerHTML = post.content.replace(/\n/g, '<br>');
+
+                // Display category
+                document.getElementById('post-category').textContent =
+                    post.category || "Not specified";
+
+            } catch (error) {
+                console.error('Error loading post:', error);
+
+                let userMessage = "❌ " + error.message;
+
+                if (error.message.includes('not found') || error.message.includes('404')) {
+                    userMessage += '<br><br>Possible reasons:<br>- Post was deleted<br>- ID is incorrect';
+                } else if (error.message.includes('<!DOCTYPE html>')) {
+                    userMessage += '<br><br>Possible reasons:<br>1. You are opening file as file:// instead of http://<br>2. Server is not running or running on different port';
+                }
+
+                showError(userMessage);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Load data on startup
+        document.addEventListener("DOMContentLoaded", async () => {
+            // First check server status
+            const serverConnected = await checkServerStatus();
+
+            if (serverConnected) {
+                loadPost();
+            }
+        });
+    </script>
+</body>
+</html>

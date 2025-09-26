@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posts - medinfo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .post-card {
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: none;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+
+            .post-card:hover {
+                transform: translateY(-3px);
+            }
+
+        h1 {
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .post-title {
+            color: #1e3a8a;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .post-date {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .post-category {
+            font-size: 0.9rem;
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        .navbar {
+            background-color: #1e3a8a;
+            height: 50px; /* الحفاظ على الارتفاع الأصلي */
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            height: 100%; /* ليتناسب مع ارتفاع الشريط */
+            padding: 0 15px; /* تقليل الحشوة الداخلية */
+        }
+
+        .logo-img {
+            max-height: 150px; /* زيادة طفيفة من 40 إلى 42 بكسل */
+            max-width: 310px; /* زيادة طفيفة من 150 إلى 160 بكسل */
+            object-fit: contain;
+            /* تحسين الوضوح مع الحفاظ على الحجم */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            filter: contrast(110%) brightness(105%);
+            transition: transform 0.3s ease;
+        }
+
+            /* تأثير عند المرور بالماوس */
+            .logo-img:hover {
+                transform: scale(1.03);
+            }
+
+        #searchBox, #filterCategory {
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            padding: 10px 15px;
+        }
+
+        mark {
+            background: #facc15;
+            padding: 0 2px;
+            border-radius: 4px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .server-status {
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+            .server-status.connected {
+                background: #e8f5e9;
+                color: #388e3c;
+            }
+
+            .server-status.disconnected {
+                background: #ffebee;
+                color: #d32f2f;
+            }
+
+        /* ✅ Dark Mode */
+        .dark-mode {
+            background-color: #111 !important;
+            color: #eee !important;
+        }
+
+            .dark-mode .card {
+                background-color: #1e1e1e;
+                color: #eee;
+                border-color: #333;
+            }
+
+            .dark-mode .navbar {
+                background-color: #000 !important;
+            }
+
+            .dark-mode .navbar-brand {
+                color: #fff !important;
+            }
+
+            .dark-mode input,
+            .dark-mode select {
+                background-color: #333 !important;
+                color: #fff !important;
+                border: 1px solid #555 !important;
+            }
+    </style>
+</head>
+<body>
+
+    <!-- ✅ Dark Mode Toggle -->
+    <button id="toggle-dark" style="position: fixed; top: 10px; right: 10px; z-index: 9999;" class="btn btn-sm btn-dark">🌙</button>
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container">
+            <!-- استبدال النص بصورة -->
+            <a class="navbar-brand" href="#">
+                <img src="logo.png" alt="medinfo Logo" class="logo-img">
+                <span class="visually-hidden">medinfo</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Server status -->
+    <div class="container">
+        <div class="server-status" id="serverStatus">Checking server status...</div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container">
+        <h1 class="text-center mb-4">📰 All Posts</h1>
+
+        <!-- Search and filter tools -->
+        <div class="row mb-4">
+            <div class="col-md-8 mb-2">
+                <input type="text" id="searchBox" class="form-control" placeholder="🔍 Search...">
+            </div>
+            <div class="col-md-4">
+                <select id="filterCategory" class="form-control">
+                    <option value="">📂 All categories</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">Loading posts...</div>
+        <div id="error" class="error-message" style="display: none;"></div>
+        <div id="posts"></div>
+    </div>
+
+    <script>
+        // ✅ Dark Mode
+        const toggleBtn = document.getElementById("toggle-dark");
+        const darkClass = "dark-mode";
+
+        if (localStorage.getItem("dark") === "true") {
+            document.body.classList.add(darkClass);
+        }
+
+        toggleBtn.addEventListener("click", () => {
+            document.body.classList.toggle(darkClass);
+            const isDark = document.body.classList.contains(darkClass);
+            localStorage.setItem("dark", isDark);
+        });
+
+        // Helper function to display errors
+        function showError(message) {
+            const errorDiv = document.getElementById("error");
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = "block";
+        }
+
+        function setLoading(isLoading) {
+            document.getElementById("loading").style.display = isLoading ? "block" : "none";
+        }
+
+        // Check server status
+        async function checkServerStatus() {
+            const serverStatus = document.getElementById('serverStatus');
+            try {
+                const res = await fetch('/api/test');
+
+                if (!res.ok) {
+                    throw new Error(`Server is running but with issues (Status: ${res.status})`);
+                }
+
+                const data = await res.json();
+                if (data.status !== 'ok') {
+                    throw new Error('Server is running but endpoint is incorrect');
+                }
+
+                serverStatus.textContent = '✅ Server is working correctly';
+                serverStatus.className = 'server-status connected';
+                return true;
+            } catch (error) {
+                serverStatus.textContent = '❌ Server is not connected! Make sure:<br>1. Server is running (node server.js)<br>2. Page is opened via http://localhost:3000/index.html';
+                serverStatus.className = 'server-status disconnected';
+                return false;
+            }
+        }
+
+        // Rest of the script
+        let allPosts = [];
+        let allCategories = [];
+
+        async function loadCategories() {
+            try {
+                const res = await fetch("/api/categories", {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch categories (Status: ${res.status})`);
+                }
+
+                allCategories = await res.json();
+
+                const select = document.getElementById("filterCategory");
+                select.innerHTML = '<option value="">📂 All categories</option>';
+                allCategories.forEach(cat => {
+                    const opt = document.createElement("option");
+                    opt.value = cat.name;
+                    opt.textContent = cat.name;
+                    select.appendChild(opt);
+                });
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                showError("❌ " + error.message + " - Make sure server is running");
+            }
+        }
+
+        async function loadPosts() {
+            try {
+                setLoading(true);
+                const res = await fetch("/api/posts", {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch posts (Status: ${res.status})`);
+                }
+
+                let posts;
+                try {
+                    posts = await res.json();
+                } catch (e) {
+                    const errorText = await res.text();
+                    throw new Error('Server did not respond with proper JSON: ' + errorText.substring(0, 100) + '...');
+                }
+
+                allPosts = posts;
+                applyFilters();
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+                showError("❌ " + error.message + " - Make sure server is running");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function highlight(text, keyword) {
+            if (!keyword || !text) return text;
+            const regex = new RegExp(`(${keyword})`, "gi");
+            return text.replace(regex, "<mark>$1</mark>");
+        }
+
+        function renderPosts(posts, keyword) {
+            const postsDiv = document.getElementById("posts");
+            postsDiv.innerHTML = "";
+
+            if (posts.length === 0) {
+                postsDiv.innerHTML = '<div class="alert alert-info text-center">No posts available ✨</div>';
+                return;
+            }
+
+            posts.forEach(post => {
+                const card = document.createElement("div");
+                card.className = "card post-card p-4";
+
+                // Make sure date is available
+                const postDate = post.created_at ?
+                    new Date(post.created_at).toLocaleDateString("en-US", {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) :
+                    'Date not specified';
+
+                card.innerHTML = `
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <a href="post.html?id=${post.id}" class="post-title text-decoration-none">
+                          ${highlight(post.title, keyword)}
+                        </a>
+                        <div class="post-date">${postDate}</div>
+                      </div>
+                      <p class="mb-1">${highlight(post.content, keyword).substring(0, 150)}...</p>
+                      <p class="post-category">📂 Category: ${post.category || "Not specified"}</p>
+                      <a href="post.html?id=${post.id}" class="btn btn-sm btn-outline-primary mt-2">View Details</a>
+                    `;
+                postsDiv.appendChild(card);
+            });
+        }
+
+        function applyFilters() {
+            const keyword = document.getElementById("searchBox").value.toLowerCase();
+            const selectedCategory = document.getElementById("filterCategory").value;
+
+            const filtered = allPosts.filter(p => {
+                const matchesKeyword =
+                    p.title.toLowerCase().includes(keyword) ||
+                    (p.content && p.content.toLowerCase().includes(keyword));
+
+                const matchesCategory =
+                    !selectedCategory ||
+                    selectedCategory === "No Category" ||
+                    p.category === selectedCategory;
+
+                return matchesKeyword && matchesCategory;
+            });
+
+            renderPosts(filtered, keyword);
+        }
+
+        document.getElementById("searchBox").addEventListener("input", applyFilters);
+        document.getElementById("filterCategory").addEventListener("change", applyFilters);
+
+        // Load data on startup
+        document.addEventListener("DOMContentLoaded", async () => {
+            // First check server status
+            const serverConnected = await checkServerStatus();
+
+            if (serverConnected) {
+                loadCategories();
+                loadPosts();
+            }
+        });
+    </script>
+
+</body>
+</html>

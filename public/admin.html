@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - medinfo</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            direction: ltr;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            transition: background-color 0.3s;
+        }
+
+            .section h2 {
+                font-size: 18px;
+                margin-bottom: 10px;
+                transition: color 0.3s;
+            }
+
+        input, textarea, select, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            transition: all 0.3s;
+        }
+
+        button {
+            background-color: #0058a3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            button:hover {
+                background-color: #003f7f;
+            }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+            .search-bar input {
+                flex: 1;
+            }
+
+        .danger {
+            color: red;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+            transition: all 0.3s;
+        }
+
+        .success-message {
+            color: #388e3c;
+            background: #e8f5e9;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+            transition: all 0.3s;
+        }
+
+        .server-status {
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+            .server-status.connected {
+                background: #e8f5e9;
+                color: #388e3c;
+            }
+
+            .server-status.disconnected {
+                background: #ffebee;
+                color: #d32f2f;
+            }
+
+        /* ✅ Dark Mode */
+        .dark-mode {
+            background-color: #1a1a1a !important;
+            color: #e0e0e0 !important;
+        }
+
+            .dark-mode .container {
+                background-color: #2d2d2d !important;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            .dark-mode h1 {
+                color: #bbdefb !important;
+            }
+
+            .dark-mode .section {
+                background-color: #333333 !important;
+            }
+
+                .dark-mode .section h2 {
+                    color: #90caf9 !important;
+                }
+
+            .dark-mode input,
+            .dark-mode textarea,
+            .dark-mode select {
+                background-color: #424242 !important;
+                border-color: #555555 !important;
+                color: #e0e0e0 !important;
+            }
+
+            .dark-mode button {
+                background-color: #1a5fb4 !important;
+            }
+
+                .dark-mode button:hover {
+                    background-color: #154c96 !important;
+                }
+
+            .dark-mode li {
+                background-color: #333333 !important;
+                color: #e0e0e0 !important;
+            }
+
+            .dark-mode .danger {
+                color: #f44336 !important;
+            }
+
+            .dark-mode .error-message {
+                background-color: #5d1f1f !important;
+                color: #ff8a80 !important;
+            }
+
+            .dark-mode .success-message {
+                background-color: #1b462b !important;
+                color: #b9f6ca !important;
+            }
+
+        /* Rich Text Editor - Compact Design */
+        .editor-toolbar {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 8px;
+            padding: 4px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            transition: background-color 0.3s;
+            flex-wrap: nowrap;
+        }
+
+        .dark-mode .editor-toolbar {
+            background: #424242;
+            border-color: #555;
+        }
+
+        .editor-toolbar::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .editor-toolbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .editor-toolbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .editor-button {
+            padding: 2px 6px;
+            min-width: 24px;
+            height: 24px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .dark-mode .editor-button {
+            background: #555;
+            color: #e0e0e0;
+        }
+
+        .editor-button:hover {
+            background: #d0d0d0;
+        }
+
+        .dark-mode .editor-button:hover {
+            background: #666;
+        }
+
+        .editor-content {
+            width: 100%;
+            min-height: 200px;
+            max-height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            overflow-y: auto;
+            transition: all 0.3s;
+            line-height: 1.5;
+        }
+
+        .dark-mode .editor-content {
+            background: #424242;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        .font-selector {
+            padding: 2px 6px;
+            min-width: 80px;
+            height: 24px;
+            background: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .dark-mode .font-selector {
+            background: #555;
+            color: #e0e0e0;
+            border-color: #666;
+        }
+
+        .color-picker {
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            padding: 0;
+            background: none;
+        }
+
+        .image-upload {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ✅ Dark Mode Toggle -->
+    <button id="toggle-dark" style="position: fixed; top: 10px; right: 10px; z-index: 9999;" class="btn btn-sm btn-dark">🌙</button>
+
+    <div class="container">
+        <h1>Admin Panel 🛠</h1>
+
+        <div class="server-status" id="serverStatus">Checking server status...</div>
+
+        <div class="section">
+            <h2>➕ Add Category</h2>
+            <input type="text" id="newCategory" placeholder="Enter category name">
+            <button onclick="addCategory()">Add</button>
+            <div id="categoryMessage" class="success-message"></div>
+            <div id="categoryErrorMessage" class="error-message"></div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Publish New Post</h2>
+            <input type="text" id="title" placeholder="Post title">
+            <select id="categorySelect"></select>
+
+            <!-- Rich Text Editor -->
+            <div class="editor-container">
+                <div class="editor-toolbar">
+                    <select class="font-selector" id="fontSelector">
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Times New Roman', serif">Times</option>
+                        <option value="'Courier New', monospace">Courier</option>
+                        <option value="Tahoma, Geneva, Verdana, sans-serif">Tahoma</option>
+                        <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+                    </select>
+
+                    <button class="editor-button" title="Increase font size" onclick="changeFontSize(1)">A+</button>
+                    <button class="editor-button" title="Decrease font size" onclick="changeFontSize(-1)">A-</button>
+
+                    <button class="editor-button" title="Bold" onclick="changeFontWeight('bold')"><b>B</b></button>
+                    <button class="editor-button" title="Italic" onclick="changeFontStyle('italic')"><i>I</i></button>
+                    <button class="editor-button" title="Underline" onclick="changeTextDecoration('underline')">U</button>
+
+                    <input type="color" class="color-picker" id="colorPicker" title="Text color">
+
+                    <button class="editor-button" title="Insert image" onclick="insertImage()">🖼</button>
+                    <input type="file" class="image-upload" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
+
+                    <button class="editor-button" title="Create link" onclick="createLink()">🔗</button>
+                </div>
+
+                <div class="editor-content" id="editorContent" contenteditable="true" placeholder="Write your post content here..."></div>
+            </div>
+
+            <button onclick="submitPost()">Publish</button>
+            <div id="postMessage" class="success-message"></div>
+            <div id="postErrorMessage" class="error-message"></div>
+            <div id="postLoading" class="loading">Publishing...</div>
+        </div>
+
+        <div class="section">
+            <h2>📚 All Posts</h2>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="🔎 Search by title or content..." oninput="loadPosts()">
+            </div>
+            <div id="postsLoading" class="loading">Loading posts...</div>
+            <ul id="postList"></ul>
+            <div id="noPosts" style="text-align: center; padding: 20px; display: none;">No posts yet</div>
+        </div>
+    </div>
+
+    <script>
+        // ✅ Dark Mode
+        const toggleBtn = document.getElementById("toggle-dark");
+        const darkClass = "dark-mode";
+
+        if (localStorage.getItem("dark") === "true") {
+            document.body.classList.add(darkClass);
+        }
+
+        toggleBtn.addEventListener("click", () => {
+            document.body.classList.toggle(darkClass);
+            const isDark = document.body.classList.contains(darkClass);
+            localStorage.setItem("dark", isDark);
+
+            // Update dark mode button icon
+            toggleBtn.innerHTML = isDark ? "☀️" : "🌙";
+        });
+
+        // Update dark mode button icon on load
+        if (document.body.classList.contains(darkClass)) {
+            toggleBtn.innerHTML = "☀️";
+        } else {
+            toggleBtn.innerHTML = "🌙";
+        }
+
+        // Helper function to display messages
+        function showMessage(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.style.display = 'block';
+            element.style.color = isError ? '#d32f2f' : '#388e3c';
+
+            if (!isError) {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Helper function to show loading
+        function setLoading(elementId, isLoading) {
+            document.getElementById(elementId).style.display = isLoading ? 'block' : 'none';
+        }
+
+        // Check server status
+        async function checkServerStatus() {
+            const serverStatus = document.getElementById('serverStatus');
+            try {
+                const res = await fetch('/api/posts', {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+
+                serverStatus.textContent = '✅ Server is working correctly';
+                serverStatus.className = 'server-status connected';
+                return true;
+            } catch (error) {
+                serverStatus.textContent = '❌ Server is not connected! Make sure:<br>1. Server is running (node server.js)<br>2. Page is opened via http://localhost:3000/admin.html';
+                serverStatus.className = 'server-status disconnected';
+                return false;
+            }
+        }
+
+        // Fetch categories
+        async function fetchCategories() {
+            try {
+                setLoading('postsLoading', true);
+                const res = await fetch('/api/categories');
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch categories (Status: ${res.status})`);
+                }
+
+                const categories = await res.json();
+                const select = document.getElementById('categorySelect');
+                select.innerHTML = '<option value="">No Category</option>';
+
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = cat.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                showMessage('categoryErrorMessage', '❌ ' + error.message, true);
+            } finally {
+                setLoading('postsLoading', false);
+            }
+        }
+
+        // Rich Text Editor
+        function changeFont(font) {
+            document.execCommand('fontName', false, font);
+        }
+
+        function changeFontSize(change) {
+            const currentSize = parseInt(document.queryCommandValue('fontSize')) || 3;
+            let newSize = currentSize + change;
+
+            if (newSize < 1) newSize = 1;
+            if (newSize > 7) newSize = 7;
+
+            document.execCommand('fontSize', false, newSize);
+        }
+
+        function changeFontWeight(weight) {
+            document.execCommand('bold', false, null);
+        }
+
+        function changeFontStyle(style) {
+            document.execCommand('italic', false, null);
+        }
+
+        function changeTextDecoration(decoration) {
+            document.execCommand('underline', false, null);
+        }
+
+        function changeColor(color) {
+            document.execCommand('foreColor', false, color);
+        }
+
+        function insertImage() {
+            document.getElementById('imageUpload').click();
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const img = `<img src="${e.target.result}" style="max-width: 100%; height: auto; margin: 5px 0;">`;
+                document.execCommand('insertHTML', false, img);
+            };
+
+            reader.readAsDataURL(file);
+            event.target.value = ''; // Reset file input
+        }
+
+        function createLink() {
+            const url = prompt('Enter the link URL:');
+            if (url && url.trim() !== '') {
+                document.execCommand('createLink', false, url);
+            }
+        }
+
+        // Publish new post
+        async function submitPost() {
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('editorContent').innerHTML;
+
+            const category_id = document.getElementById('categorySelect').value || null;
+
+            // Validate input
+            if (!title || !content || content === '<br>' || content === '<div><br></div>') {
+                showMessage('postErrorMessage', '❌ Please enter title and content', true);
+                return;
+            }
+
+            try {
+                setLoading('postLoading', true);
+                document.getElementById('postErrorMessage').style.display = 'none';
+
+                const res = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ title, content, category_id })
+                });
+
+                if (!res.ok) {
+                    let errorMessage = `Failed to publish (Status: ${res.status})`;
+
+                    try {
+                        const errorData = await res.json();
+                        if (errorData.error) errorMessage += `: ${errorData.error}`;
+                    } catch (e) {
+                        // Use default message
+                    }
+
+                    throw new Error(errorMessage);
+                }
+
+                // Clear fields
+                document.getElementById('title').value = '';
+                document.getElementById('editorContent').innerHTML = '';
+
+                // Show success message
+                showMessage('postMessage', '✅ Post published successfully');
+
+                // Refresh posts list
+                setTimeout(loadPosts, 500);
+            } catch (error) {
+                console.error('Error publishing post:', error);
+                showMessage('postErrorMessage', '❌ ' + error.message, true);
+            } finally {
+                setLoading('postLoading', false);
+            }
+        }
+
+        // Load and display posts
+        async function loadPosts() {
+            try {
+                setLoading('postsLoading', true);
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                const res = await fetch('/api/posts', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch posts (Status: ${res.status})`);
+                }
+
+                let posts;
+                try {
+                    posts = await res.json();
+                } catch (e) {
+                    const errorText = await res.text();
+                    throw new Error('Server did not respond with proper JSON: ' + errorText.substring(0, 100) + '...');
+                }
+
+                const postList = document.getElementById('postList');
+                const noPosts = document.getElementById('noPosts');
+
+                postList.innerHTML = '';
+
+                // Show "no posts" message if there are no posts
+                if (posts.length === 0) {
+                    noPosts.style.display = 'block';
+                    return;
+                }
+
+                noPosts.style.display = 'none';
+
+                // Display posts
+                posts.forEach(p => {
+                    // Clean content from HTML tags for snippet
+                    const plainText = p.content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
+
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                <div>
+                  <strong>${p.title}</strong> - ${p.category || 'No Category'}
+                  <div style="font-size:0.85em; color:#666; margin-top:5px; line-height:1.4">${plainText.substring(0, 50)}${plainText.length > 50 ? '...' : ''}</div>
+                </div>
+                <span class="danger" onclick="deletePost(${p.id})">❌ Delete</span>
+              `;
+                    postList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                showMessage('postErrorMessage', '❌ ' + error.message, true);
+            } finally {
+                setLoading('postsLoading', false);
+            }
+        }
+
+        // Delete post
+        async function deletePost(id) {
+            if (!confirm('Are you sure you want to delete this post?')) return;
+
+            try {
+                setLoading('postsLoading', true);
+
+                const apiUrl = `/api/posts/${id}`;
+                console.log('Sending delete request to:', apiUrl);
+
+                const res = await fetch(apiUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', res.status);
+
+                // Check content type before parsing as JSON
+                const contentType = res.headers.get('content-type') || '';
+
+                if (!contentType.includes('application/json')) {
+                    const errorText = await res.text();
+                    console.error('Unexpected response (not JSON):', errorText);
+
+                    let errorMessage = 'Server did not respond with JSON format';
+
+                    if (errorText.includes('Cannot DELETE')) {
+                        errorMessage = 'Incorrect path - make sure server is running';
+                    } else if (errorText.includes('404')) {
+                        errorMessage = 'Path not found - check server settings';
+                    } else if (errorText.includes('<!DOCTYPE html>')) {
+                        errorMessage = 'Server returned HTML instead of JSON - make sure to open page via http://localhost:3000';
+                    }
+
+                    throw new Error(errorMessage + ': ' + errorText.substring(0, 100) + '...');
+                }
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    if (result.deleted > 0) {
+                        showMessage('postMessage', '✅ Post deleted successfully');
+                        loadPosts();
+                    } else {
+                        showMessage('postErrorMessage', '❌ No post was deleted', true);
+                    }
+                } else {
+                    throw new Error(result.error || 'Failed to delete');
+                }
+            } catch (error) {
+                console.error('Error deleting post:', error);
+
+                let userMessage = '❌ ' + error.message;
+
+                if (error.message.includes('Cannot DELETE') || error.message.includes('404')) {
+                    userMessage += '<br><br>Possible reasons:<br>1. Make sure server is running (node server.js)<br>2. Open page via http://localhost:3000/admin.html (not file://)<br>3. Check file structure';
+                } else if (error.message.includes('<!DOCTYPE html>')) {
+                    userMessage += '<br><br>Possible reasons:<br>1. You are opening file as file:// instead of http://<br>2. Server is not running or running on different port';
+                }
+
+                document.getElementById('postErrorMessage').innerHTML = userMessage;
+                document.getElementById('postErrorMessage').style.display = 'block';
+            } finally {
+                setLoading('postsLoading', false);
+            }
+        }
+
+        // Add new category
+        async function addCategory() {
+            const name = document.getElementById('newCategory').value.trim();
+
+            if (!name) {
+                showMessage('categoryErrorMessage', '❌ Please enter category name', true);
+                return;
+            }
+
+            try {
+                setLoading('postsLoading', true);
+                document.getElementById('categoryErrorMessage').style.display = 'none';
+
+                const res = await fetch('/api/categories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ name })
+                });
+
+                if (!res.ok) {
+                    let errorMessage = `Failed to add category (Status: ${res.status})`;
+
+                    try {
+                        const errorData = await res.json();
+                        if (errorData.error) errorMessage += `: ${errorData.error}`;
+                    } catch (e) {
+                        // Use default message
+                    }
+
+                    throw new Error(errorMessage);
+                }
+
+                // Clear field
+                document.getElementById('newCategory').value = '';
+
+                // Show success message
+                showMessage('categoryMessage', '✅ Category added successfully');
+
+                // Refresh categories list
+                setTimeout(fetchCategories, 500);
+            } catch (error) {
+                console.error('Error adding category:', error);
+                showMessage('categoryErrorMessage', '❌ ' + error.message, true);
+            } finally {
+                setLoading('postsLoading', false);
+            }
+        }
+
+        // Load data on startup
+        document.addEventListener("DOMContentLoaded", async () => {
+            // First check server status
+            const serverConnected = await checkServerStatus();
+
+            if (serverConnected) {
+                fetchCategories();
+                loadPosts();
+            }
+
+            // Initialize text editor
+            const editor = document.getElementById('editorContent');
+            editor.addEventListener('focus', () => {
+                document.execCommand('defaultParagraphSeparator', false, 'div');
+            });
+
+            // Change font when selected
+            document.getElementById('fontSelector').addEventListener('change', (e) => {
+                changeFont(e.target.value);
+            });
+
+            // Set default text color
+            document.getElementById('colorPicker').value = '#000000';
+
+            // Improve color picker appearance
+            document.getElementById('colorPicker').style.padding = '0';
+
+            // Improve toolbar
+            const toolbar = document.querySelector('.editor-toolbar');
+            if (toolbar) {
+                toolbar.style.width = '100%';
+            }
+        });
+    </script>
+</body>
+
+</html>

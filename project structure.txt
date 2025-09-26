@@ -1,0 +1,8 @@
+medinfo/
+├── public/           # ملفات CSS / JS / الصور | Frontend assets
+├── views/            # ملفات HTML الرئيسية | HTML pages
+├── routes/           # مسارات API | API routes
+├── database.js       # إعداد قاعدة البيانات | SQLite setup
+├── app.js            # إعدادات Express
+├── server.js         # تشغيل الخادم | Server entry point
+├── medinfo.db        # قاعدة البيانات | SQLite database file

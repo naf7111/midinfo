@@ -25,7 +25,17 @@
 - **واجهة برمجية | REST API:** Postman or AJAX  
 
 ---
+🧠 فكرة المشروع | Project Idea
 
+تم تطوير المشروع لتقديم حل سريع ومنظم لتوثيق المعلومات الطبية أو الإدارية في المستشفيات، مع واجهة سهلة الاستخدام للمشرفين والموظفين.
+
+This project was developed as a lightweight tool to help healthcare professionals publish, manage, and browse medical blog posts in an organized way.
+
+🙋‍♂️ المطور | Developer
+
+👨‍💻 Nawaf Nasser Alshamrani
+📍 المملكة العربية السعودية | Saudi Arabia
+🌐 GitHub: @naf7111
 ## 🚀 طريقة التشغيل | Getting Started
 
 ```bash
